@@ -1,7 +1,7 @@
 import { WebSocketServer } from 'ws'
 import { randomUUID } from 'crypto'
 import { handleMessage } from './ws.router.js'
-import { sockets } from '../modules/matchmaking/matchmaking.state.js'
+import { sockets } from '../matchmaking/matchmaking.state.js'
 
 export function createWSServer(server) {
   const wss = new WebSocketServer({ server, path: '/ws' })

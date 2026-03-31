@@ -1,5 +1,5 @@
 import http from 'http'
-import { createWSServer } from './ws/ws.server.js'
+import { createWSServer } from './src/modules/ws/ws.server.js'
 
 const server = http.createServer()
 
