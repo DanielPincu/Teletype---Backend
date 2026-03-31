@@ -1,4 +1,5 @@
-
+import { matchmakingController } from '../modules/matchmaking/matchmaking.controller.js'
+import { signalController } from '../modules/signal/signal.controller.js'
 
 export function handleMessage(ws, msg) {
   switch (msg.type) {
