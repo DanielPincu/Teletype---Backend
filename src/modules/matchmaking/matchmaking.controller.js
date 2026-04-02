@@ -12,7 +12,11 @@ export const matchmakingController = {
 
     const peer = service.findAvailablePeer(ws)
 
-    if (peer) {
+    if (peer && peer.readyState === 1 && !peer.peer) {
+      // remove both from queue just in case
+      service.removeFromQueue(peer.id)
+      service.removeFromQueue(ws.id)
+
       service.pair(ws, peer)
 
       send(ws, { type: 'peer-found', peerId: peer.id, initiator: true })
@@ -20,7 +24,7 @@ export const matchmakingController = {
       return
     }
 
-    queue.push(ws)
+    service.addToQueue(ws)
     send(ws, { type: 'queued' })
   },
 
@@ -35,7 +39,7 @@ export const matchmakingController = {
 
     const peer = room.find(s => s.id !== ws.id && !s.peer)
 
-    if (peer) {
+    if (peer && peer.readyState === 1 && !peer.peer) {
       service.pair(ws, peer)
 
       send(ws, { type: 'peer-found', peerId: peer.id, initiator: true })
@@ -48,7 +52,7 @@ export const matchmakingController = {
   },
 
   leave(ws) {
-    ws.peer = null
+    service.unpair(ws, sockets)
     service.removeFromQueue(ws.id)
     send(ws, { type: 'left' })
   }
