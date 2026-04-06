@@ -81,17 +81,31 @@ export const matchmakingController = {
   },
 
   leave(ws) {
+    // capture peer before unpairing
+    const peerId = ws.peer
+    const peer = peerId ? sockets.get(peerId) : null
+
+    // unpair both sides
     service.unpair(ws, sockets)
     service.removeFromQueue(ws.id)
 
-    // remove from rooms
+    // remove both users from rooms and clean rooms
     for (const [roomId, arr] of rooms.entries()) {
       const filtered = arr.filter(s => s.id !== ws.id && s.readyState === 1)
 
-      if (filtered.length === 0) rooms.delete(roomId)
-      else rooms.set(roomId, filtered)
+      // if peer exists, also remove peer from this room
+      const final = peer ? filtered.filter(s => s.id !== peer.id) : filtered
+
+      if (final.length === 0) rooms.delete(roomId)
+      else rooms.set(roomId, final)
     }
 
+    // notify the leaving user
     send(ws, { type: 'left' })
+
+    // notify the peer (if any) that the other side left
+    if (peer && peer.readyState === 1) {
+      send(peer, { type: 'peer-left' })
+    }
   }
 }
