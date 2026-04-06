@@ -2,7 +2,7 @@ import { WebSocketServer } from 'ws'
 import { randomUUID } from 'crypto'
 import { handleMessage } from './ws.router.js'
 import { sockets } from '../matchmaking/matchmaking.state.js'
-import { unpair } from '../matchmaking/matchmaking.service.js'
+import { matchmakingController } from '../matchmaking/matchmaking.controller.js'
 
 export function createWSServer(server) {
   const wss = new WebSocketServer({ server, path: '/ws' })
@@ -27,8 +27,8 @@ export function createWSServer(server) {
     ws.on('close', () => {
       console.log('Disconnected:', ws.id)
 
-      // clean peer relationship
-      unpair(ws, sockets)
+      // full cleanup (peer, queue, rooms)
+      matchmakingController.leave(ws)
 
       sockets.delete(ws.id)
     })
