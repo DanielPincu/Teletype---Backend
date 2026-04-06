@@ -57,18 +57,20 @@ export const matchmakingController = {
       return send(ws, { type: 'room-busy', roomId })
     }
 
-    // try to find peer FIRST
-    const peer = room.find(s => !s.peer)
+    // if exactly one user is in room → pair
+    if (room.length === 1) {
+      const peer = room[0]
 
-    if (peer && peer.readyState === 1 && !peer.peer) {
-      service.pair(ws, peer)
+      if (peer && peer.readyState === 1 && !peer.peer) {
+        room.push(ws)
+        rooms.set(roomId, room)
 
-      // room no longer needed
-      rooms.delete(roomId)
+        service.pair(ws, peer)
 
-      send(ws, { type: 'peer-found', peerId: peer.id, initiator: true })
-      send(peer, { type: 'peer-found', peerId: ws.id, initiator: false })
-      return
+        send(ws, { type: 'peer-found', peerId: peer.id, initiator: true })
+        send(peer, { type: 'peer-found', peerId: ws.id, initiator: false })
+        return
+      }
     }
 
     // otherwise join and wait
